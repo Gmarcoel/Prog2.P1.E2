@@ -16,28 +16,46 @@ int find_node_index(const Graph * g, long nId1);
 int* graph_getConnectionsIndex(const Graph * g, int index);
 
 Graph * graph_init (){
-	int i=0;
+	
+	int i=0,j=0;
 	Graph * g;
 	
 	g = (Graph*)calloc(1,sizeof(Graph));
 	
-	if (g==NULL){
+
+
+	if (g == NULL){
 		return NULL;
 	} else {
-		for(i=0;i<g->num_nodes;i++){
+		g->num_edges = 0;
+		g->num_nodes = 0;
+		
+		for( i=0; i < MAX_NODES; i++ ){
+
 			g->nodes[i]=NULL;
+			
+			for( j=0; j < MAX_NODES; j++ ) {
+				g->connections[i][j] = 0;
+			}
+
 		}
+		
 		return g;
 	}
+
 }
 
 void graph_free (Graph *g){
+	int i;
+	for(i=0;i<g->num_nodes;i++){
+		free(g->nodes[i]);
+	}
 	free(g);
 }
 
 Status graph_insertNode (Graph *g, const Node *n){
-	int i;
-	for(i=0;i<g->num_nodes;i++){
+	int i=0;
+	for(i=0; i<g->num_nodes; i++){
 		if(node_getId(g->nodes[i]) == node_getId(n)){
 			return ERROR;
 		}
@@ -48,18 +66,16 @@ Status graph_insertNode (Graph *g, const Node *n){
 }
 
 Status graph_insertEdge (Graph *g, const long nId1, const long nId2) {
-
-	int from,to;
-
-	if(!g||!nId1||!nId1) {
+	if(!g) {
 		return ERROR;
 	}
-
-	from = find_node_index(g,nId1);
-	to = find_node_index(g,nId2);
-	g->connections[from][to]=TRUE;
-	node_setNConnect(g->nodes[from],node_getConnect(g->nodes[from])+1);
+	
+	g->connections[find_node_index(g,nId1)][find_node_index(g,nId2)]=1;
+	
 	g->num_edges++;
+	
+	node_setNConnect(g->nodes[find_node_index(g,nId1)],node_getConnect(g->nodes[find_node_index(g,nId1)])+1);
+	
 	return OK;
 }
 
@@ -120,7 +136,10 @@ Bool graph_areConnected (const Graph *g, const long nId1, const long nId2){
 	if (!g) {
 		return FALSE;
 	}
-	return g->connections[nId1][nId2];
+	int in1, in2;
+	in1=find_node_index(g,nId1);
+	in2=find_node_index(g,nId2);
+	return g->connections[in1][in2];
 }
 
 int graph_getNumberOfConnectionsFrom (const Graph *g, const long fromId){
@@ -145,10 +164,17 @@ long* graph_getConnectionsFrom (const Graph *g, const long fromId){
 		array[i] = node_getId(g->nodes[index[i]]);
 	}
 	free(index);
+	return array;
 }
 
 int graph_print (FILE *pf, const Graph *g){
-
+	if (!g){
+		return -1;
+	}
+	int i=0;
+	for(i=0;i<g->num_nodes;i++){
+		node_print (pf,g->nodes[i]);
+	}
 }
 
 
