@@ -58,7 +58,7 @@ Status graph_insertEdge (Graph *g, const long nId1, const long nId2) {
 	from = find_node_index(g,nId1);
 	to = find_node_index(g,nId2);
 	g->connections[from][to]=TRUE;
-	node_setNConnect(g->nodes,node_getConnect(g->nodes)+1);
+	node_setNConnect(g->nodes[from],node_getConnect(g->nodes[from])+1);
 	g->num_edges++;
 	return OK;
 }
@@ -142,7 +142,7 @@ long* graph_getConnectionsFrom (const Graph *g, const long fromId){
 			return NULL;
 	}
 	for (i=0;i<node_getConnect(g->nodes[find_node_index(g, fromId)]);i++){
-		array[i] = node_getId(index[i]);
+		array[i] = node_getId(g->nodes[index[i]]);
 	}
 	free(index);
 }
